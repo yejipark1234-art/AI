@@ -305,6 +305,38 @@ function detectPriority(text){
 }
 
 // v0.2: 과목명 + 마감일 D-day 표시
+// v0.3: 할 일 문장을 간결한 명사형에 가깝게 정제
+const _ACTION_ALT = '작성|제시|설명|분석|비교|정의|선택|적용|포함|제출|구분|설계|검증|정리|구성|제안|반영|첨부|업로드|다운로드|기재|준수|충족|참여|완료|준비|수정|보완|조사|요약|번역|출력|입력|회신|응답|예약|결제|납부|서명|동의|인증|수강|출석|제작|등록|신청|확인|발표';
+const _FILLER = ['반드시','엄격히','꼭','필히','가급적','되도록','미리','사전에','충분히','성실히','빠짐없이','정확히','즉시','바로','각별히','먼저'];
+const _DEADLINE_STRIP = /(?:\d{4}\s*[.\-/]\s*\d{1,2}\s*[.\-/]\s*\d{1,2}\s*(?:일)?\s*(?:전)?\s*까지|\d{1,2}\s*월\s*\d{1,2}\s*일\s*(?:전)?\s*까지|(?:다음|이번|오는|금)\s*주(?:\s*[월화수목금토일]요일)?\s*(?:전)?\s*까지|[월화수목금토일]요일\s*(?:전)?\s*까지|[가-힣A-Za-z0-9]+\s*전\s*까지)/;
+
+function cleanTask(text){
+  let t = text;
+  t = t.replace(_DEADLINE_STRIP, ' ');                  // 마감 표현 제거
+  for(const a of _FILLER) t = t.split(a).join('');       // 부사 제거
+  const endings = [
+    /(?:해|하여|하)?\s*주시기\s*바랍니다\.?$/,
+    /(?:해|하여)\s*주(?:십시오|세요)\.?$/,
+    /하(?:십시오|시오|세요)\.?$/,
+    /(?:해야|하여야|되어야)\s*(?:한다|합니다|함|됩니다)\.?$/,
+    /하기\s*바[랍람]니?다?\.?$/,
+    /할\s*것\.?$/,
+    /(?:바랍니다|바람|요망)\.?$/,
+    /(?:합니다|해요|하세요|한다|됩니다|입니다)\.?$/,
+  ];
+  for(const re of endings) t = t.replace(re,'').trim();  // 종결어미 정리
+  t = t.replace(new RegExp('((?:'+_ACTION_ALT+'))(?:하여|해|하|합)\\s*$'), '$1');    // 동사어간→명사 (제출해→제출)
+  t = t.replace(new RegExp('(?:을|를|이|가)\\s+((?:'+_ACTION_ALT+'))\\s*$'), ' $1'); // '보고서를 제출'→'보고서 제출'
+  t = t.replace(/\s{2,}/g,' ').trim().replace(/^[,.\s]+|[,.\s]+$/g,'');
+  const MAX = 45;
+  if(t.length > MAX){
+    const cut = t.slice(0, MAX);
+    const sp = cut.lastIndexOf(' ');
+    t = (sp > 20 ? cut.slice(0, sp) : cut) + '…';
+  }
+  return t || text;
+}
+
 function renderMeta(){
   meta.innerHTML='';
   if(!currentSubject && !currentDeadline){ meta.classList.remove('show'); return; }
@@ -345,7 +377,7 @@ function render(items){
     cb.addEventListener('change', updateScore);
     const span=document.createElement('span');
     span.className='item-text';
-    const condensed=condenseText(text);
+    const condensed=cleanTask(text);
     if(condensed.endsWith('…')){
       // 잘린 긴 문장: "더보기" 버튼으로 펼치기/접기
       const txtNode=document.createTextNode(condensed);
