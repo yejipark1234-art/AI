@@ -46,6 +46,10 @@
     .prio-high{background:#fde8e8;color:#c0392b}
     .prio-mid{background:#fff4e0;color:#b9770e}
     .prio-low{background:#eef1f5;color:#69707a}
+    .move{display:inline-flex;flex-direction:column;gap:2px;flex-shrink:0}
+    .mv{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:0 7px;font-size:10px;line-height:1.5;color:var(--muted);cursor:pointer;font-weight:700}
+    .mv:hover{background:var(--soft);color:var(--text)}
+    .mv:disabled{opacity:.3;cursor:default}
     .empty{padding:18px;background:#fafafa;border-radius:12px;color:var(--muted)}
     .footer{margin-top:18px;font-size:12px;color:var(--muted)}
     @media(max-width:640px){h1{font-size:34px}.wrap{padding-top:34px}.card{padding:18px}}
@@ -304,11 +308,39 @@ function render(items){
       track('priority_set',{priority:PRIOS[pi].key});
     });
 
-    li.append(cb, span, prio);
+    // v0.2 순서 이동: 위/아래 버튼
+    const move=document.createElement('span');
+    move.className='move';
+    const up=document.createElement('button');
+    up.type='button'; up.className='mv'; up.textContent='▲'; up.title='위로 이동';
+    const down=document.createElement('button');
+    down.type='button'; down.className='mv'; down.textContent='▼'; down.title='아래로 이동';
+    up.addEventListener('click',()=>{
+      const prev=li.previousElementSibling;
+      if(prev){ list.insertBefore(li, prev); updateMoveButtons(); track('item_moved',{dir:'up'}); }
+    });
+    down.addEventListener('click',()=>{
+      const next=li.nextElementSibling;
+      if(next){ list.insertBefore(next, li); updateMoveButtons(); track('item_moved',{dir:'down'}); }
+    });
+    move.append(up, down);
+
+    li.append(cb, span, prio, move);
     list.appendChild(li);
   });
+  updateMoveButtons();
   result.style.display='block';
   updateScore();
+}
+
+function updateMoveButtons(){
+  const lis=[...list.querySelectorAll('li')];
+  lis.forEach((li,i)=>{
+    const btns=li.querySelectorAll('.mv');
+    if(btns.length<2) return;
+    btns[0].disabled=(i===0);
+    btns[1].disabled=(i===lis.length-1);
+  });
 }
 
 function updateScore(){
