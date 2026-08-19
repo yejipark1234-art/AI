@@ -38,10 +38,17 @@
     .result-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
     .score{font-size:14px;color:var(--muted)}
     ul{list-style:none;padding:0;margin:0}
-    li{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+    li{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line);position:relative}
     li:last-child{border-bottom:0}
     input[type=checkbox]{margin-top:4px;width:18px;height:18px}
     li .item-text{flex:1;min-width:0;cursor:pointer}
+    .item-text.clip{border-bottom:1px dotted var(--muted)}
+    .item-text.clip:hover::after{
+      content:attr(data-full);
+      position:absolute;left:34px;right:8px;top:calc(100% - 6px);z-index:30;
+      background:#15171a;color:#fff;padding:9px 12px;border-radius:10px;
+      font-size:13px;line-height:1.55;font-weight:400;white-space:normal;
+      box-shadow:0 8px 24px rgba(0,0,0,.28)}
     #done:disabled{opacity:.4;cursor:default}
     .prio{flex-shrink:0;align-self:flex-start;margin-top:1px;border:0;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
     .prio-high{background:#fde8e8;color:#c0392b}
@@ -301,7 +308,7 @@ function render(items){
     const span=document.createElement('span');
     span.className='item-text';
     span.textContent=condenseText(text);
-    if(span.textContent!==text) span.title=text;
+    if(span.textContent!==text){ span.dataset.full=text; span.classList.add('clip'); span.title=text; }
     // 문장을 클릭해도 체크박스 토글
     span.addEventListener('click', ()=>{ cb.checked=!cb.checked; updateScore(); });
 
