@@ -41,7 +41,7 @@
     li{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
     li:last-child{border-bottom:0}
     input[type=checkbox]{margin-top:4px;width:18px;height:18px}
-    li .item-text{flex:1;min-width:0}
+    li .item-text{flex:1;min-width:0;cursor:pointer}
     #done:disabled{opacity:.4;cursor:default}
     .prio{flex-shrink:0;align-self:flex-start;margin-top:1px;border:0;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
     .prio-high{background:#fde8e8;color:#c0392b}
@@ -298,6 +298,8 @@ function render(items){
     span.className='item-text';
     span.textContent=condenseText(text);
     if(span.textContent!==text) span.title=text;
+    // 문장을 클릭해도 체크박스 토글
+    span.addEventListener('click', ()=>{ cb.checked=!cb.checked; updateScore(); });
 
     // v0.2 중요도 태그: 자동 감지 후 클릭으로 조정
     const prio=document.createElement('button');
