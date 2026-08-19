@@ -104,7 +104,6 @@
           <span class="score" id="score">0 / 0 완료</span>
         </div>
         <div id="meta" class="meta"></div>
-        <p class="hint" style="margin:0 0 6px">오른쪽 <b>중요도 태그</b>를 눌러 높음·보통·낮음으로 바꿀 수 있어.</p>
         <div id="doneMsg" class="done-msg">🎉 모든 항목 완료! 제출 준비 끝났어요.</div>
         <ul id="list"></ul>
         <div class="row">
