@@ -314,27 +314,35 @@ function cleanTask(text){
   let t = text;
   t = t.replace(_DEADLINE_STRIP, ' ');                  // 마감 표현 제거
   for(const a of _FILLER) t = t.split(a).join('');       // 부사 제거
-  const endings = [
-    /(?:해|하여|하)?\s*주시기\s*바랍니다\.?$/,
-    /(?:해|하여)\s*주(?:십시오|세요)\.?$/,
+  // 존댓말·연결 꼬리 제거 (긴 것부터)
+  const tails = [
+    /,?\s*(?:이\s*점\s*)?유의(?:해|하여)?\s*주시기\s*바랍니다\.?$/,
+    /(?:해|하여|하)?\s*주시기\s*바랍니?다?\.?$/,
+    /(?:해|하여)?\s*주(?:시면|세요|십시오)(?:\s*됩니다)?\.?$/,
     /하(?:십시오|시오|세요)\.?$/,
     /(?:해야|하여야|되어야)\s*(?:한다|합니다|함|됩니다)\.?$/,
     /하기\s*바[랍람]니?다?\.?$/,
     /할\s*것\.?$/,
     /(?:바랍니다|바람|요망)\.?$/,
-    /(?:합니다|해요|하세요|한다|됩니다|입니다)\.?$/,
+    /(?:됩니다|입니다|습니다)\.?$/,
   ];
-  for(const re of endings) t = t.replace(re,'').trim();  // 종결어미 정리
-  t = t.replace(new RegExp('((?:'+_ACTION_ALT+'))(?:하여|해|하|합)\\s*$'), '$1');    // 동사어간→명사 (제출해→제출)
-  t = t.replace(new RegExp('(?:을|를|이|가)\\s+((?:'+_ACTION_ALT+'))\\s*$'), ' $1'); // '보고서를 제출'→'보고서 제출'
+  for(const re of tails) t = t.replace(re,'').trim();
+  t = t.replace(/[,\s]+$/,'').trim();
+  // 끝 동사어간→명사, 목적어 조사 정리
+  t = t.replace(new RegExp('((?:'+_ACTION_ALT+'))(?:하여|해|하|합|한다)\\s*$'), '$1');
+  t = t.replace(new RegExp('(?:을|를|이|가)\\s+((?:'+_ACTION_ALT+'))\\s*$'), ' $1');
   t = t.replace(/\s{2,}/g,' ').trim().replace(/^[,.\s]+|[,.\s]+$/g,'');
-  const MAX = 45;
-  if(t.length > MAX){
-    const cut = t.slice(0, MAX);
-    const sp = cut.lastIndexOf(' ');
-    t = (sp > 20 ? cut.slice(0, sp) : cut) + '…';
-  }
-  return t || text;
+  return nominalize(t) || text;                          // 명사형 종결어미로 통일
+}
+
+// 명사형 종결어미로 끝내기: -하기 / -음(ㅁ) / -(을/ㄹ)것
+function nominalize(t){
+  t = t.replace(/[.\s]+$/,'').trim();
+  if(!t) return t;
+  if(/(?:음|함|기|것)$/.test(t)) return t;                        // 이미 명사형이면 유지
+  if(new RegExp('(?:'+_ACTION_ALT+')$').test(t)) return t + '하기'; // 제출 → 제출하기
+  t = t.replace(/(?:하여|하다|한다|합니다|해요|하세요|해)$/, '하기'); // 동사 → 하기
+  return t;
 }
 
 function renderMeta(){
@@ -377,27 +385,7 @@ function render(items){
     cb.addEventListener('change', updateScore);
     const span=document.createElement('span');
     span.className='item-text';
-    const condensed=cleanTask(text);
-    if(condensed.endsWith('…')){
-      // 잘린 긴 문장: "더보기" 버튼으로 펼치기/접기
-      const txtNode=document.createTextNode(condensed);
-      span.appendChild(txtNode);
-      span.appendChild(document.createTextNode(' '));
-      const moreBtn=document.createElement('button');
-      moreBtn.type='button';
-      moreBtn.className='more-btn';
-      moreBtn.textContent='더보기';
-      let expanded=false;
-      moreBtn.addEventListener('click',(e)=>{
-        e.stopPropagation();            // 체크 토글 방지
-        expanded=!expanded;
-        txtNode.textContent = expanded ? (text+' ') : condensed;
-        moreBtn.textContent = expanded ? '접기' : '더보기';
-      });
-      span.appendChild(moreBtn);
-    } else {
-      span.textContent=condensed;
-    }
+    span.textContent = cleanTask(text);   // 전체 표시 (더보기/접기 없음)
     // 문장을 클릭해도 체크박스 토글
     span.addEventListener('click', ()=>{ cb.checked=!cb.checked; updateScore(); });
 
