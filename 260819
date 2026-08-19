@@ -276,11 +276,15 @@ function extractRequirements(text){
   // 인사말·맺음말·채점 기준 (요구사항이 아님 → 제외)
   const greetingRegex = /(감사(합니다|드립니다|해요|합)|고맙습니다|고마워|안녕하세요|반갑습니다|수고(하셨|하세요|했)|화이팅|파이팅|응원(합니다|해)|건투|행운을|잘\s*부탁\s*드립니다|채점\s*기준|평가\s*기준|평가\s*방법|평가\s*항목|배점|만점|가점|감점|grading|rubric|criteria|scoring)/;
 
+  // 경고문·조건문 (직접적인 할 일이 아님 → 제외)
+  const warnCondRegex = /(하더라도|더라도|경우에만|경우에는|(?:있는|없는|인|한|될)\s*경우|않으셔도|않아도|않으시면|지\s*않으(?:면|셔도)|있으시면|없으시면|유의(?:해|하여|하시|사항)|유념|명심|불이익|감점|F\s*학점|부여\s*되|처리\s*됩니다|간주\s*(?:됩니다|합니다|된다|되)|경고|주의\s*(?:하|바랍|요망))/i;
+
   let items = [];
 
   for (const line of raw){
     const cleaned = normalizeLine(line);
     if (greetingRegex.test(cleaned)) continue;          // 인사말·채점기준 제외
+    if (warnCondRegex.test(cleaned)) continue;          // 경고문·조건문 제외
     if (obligationRegex.test(cleaned) && cleaned.length >= 4 && cleaned.length <= 400) {
       items.push(cleaned);                              // 실제 '할 일'만 추가
     }
