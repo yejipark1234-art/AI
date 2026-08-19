@@ -249,10 +249,14 @@ function extractRequirements(text){
   // "라벨: 내용" 형태의 구조화된 항목 (예: Deliverable: Slides, 제출 방식: PDF)
   const structuredKeyValue = /^[A-Za-z가-힣][A-Za-z0-9가-힣\s]{1,40}:\s*\S/;
 
+  // 인사말·맺음말 (요구사항이 아님 → 제외)
+  const greetingRegex = /(감사(합니다|드립니다|해요|합)|고맙습니다|고마워|안녕하세요|반갑습니다|수고(하셨|하세요|했)|화이팅|파이팅|응원(합니다|해)|건투|행운을|잘\s*부탁\s*드립니다)/;
+
   let items = [];
 
   for (const line of raw){
     const cleaned = normalizeLine(line);
+    if (greetingRegex.test(cleaned)) continue; // 인사말/맺음말 건너뛰기
     const isKeyValue = structuredKeyValue.test(cleaned);
     const hasAction = actionRegex.test(cleaned);
     const hasDeadline = deadlineRegex.test(cleaned);
