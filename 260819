@@ -42,6 +42,7 @@
     li:last-child{border-bottom:0}
     input[type=checkbox]{margin-top:4px;width:18px;height:18px}
     li .item-text{flex:1;min-width:0}
+    .num{flex-shrink:0;width:23px;height:23px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
     .prio{flex-shrink:0;align-self:flex-start;margin-top:1px;border:0;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
     .prio-high{background:#fde8e8;color:#c0392b}
     .prio-mid{background:#fff4e0;color:#b9770e}
@@ -325,7 +326,10 @@ function render(items){
     });
     move.append(up, down);
 
-    li.append(cb, span, prio, move);
+    const num=document.createElement('span');
+    num.className='num';
+
+    li.append(num, cb, span, prio, move);
     list.appendChild(li);
   });
   updateMoveButtons();
@@ -336,6 +340,8 @@ function render(items){
 function updateMoveButtons(){
   const lis=[...list.querySelectorAll('li')];
   lis.forEach((li,i)=>{
+    const num=li.querySelector('.num');
+    if(num) num.textContent=(i+1);
     const btns=li.querySelectorAll('.mv');
     if(btns.length<2) return;
     btns[0].disabled=(i===0);
