@@ -42,7 +42,6 @@
     li:last-child{border-bottom:0}
     input[type=checkbox]{margin-top:4px;width:18px;height:18px}
     li .item-text{flex:1;min-width:0;cursor:pointer}
-    .item-text.clip{border-bottom:1px dotted var(--muted)}
     .item-text.clip:hover::after{
       content:attr(data-full);
       position:absolute;left:34px;right:8px;top:calc(100% - 6px);z-index:30;
