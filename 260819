@@ -341,7 +341,7 @@ function render(items){
     const span=document.createElement('span');
     span.className='item-text';
     span.textContent=condenseText(text);
-    if(span.textContent!==text){ span.dataset.full=text; span.classList.add('clip'); }
+    if(span.textContent.endsWith('…')){ span.dataset.full=text; span.classList.add('clip'); }
     // 문장을 클릭해도 체크박스 토글
     span.addEventListener('click', ()=>{ cb.checked=!cb.checked; updateScore(); });
 
