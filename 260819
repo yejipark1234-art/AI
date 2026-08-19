@@ -42,7 +42,7 @@
     li:last-child{border-bottom:0}
     input[type=checkbox]{margin-top:4px;width:18px;height:18px}
     li .item-text{flex:1;min-width:0}
-    .num{flex-shrink:0;width:23px;height:23px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+    #done:disabled{opacity:.4;cursor:default}
     .prio{flex-shrink:0;align-self:flex-start;margin-top:1px;border:0;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
     .prio-high{background:#fde8e8;color:#c0392b}
     .prio-mid{background:#fff4e0;color:#b9770e}
@@ -94,6 +94,7 @@
         <div id="doneMsg" class="done-msg">🎉 모든 항목 완료! 제출 준비 끝났어요.</div>
         <ul id="list"></ul>
         <div class="row">
+          <button class="primary" id="done" disabled>완료</button>
           <button class="secondary" id="copy">체크리스트 복사</button>
           <button class="secondary" id="reset">체크 해제</button>
         </div>
@@ -160,6 +161,7 @@ const result = document.getElementById('result');
 const list = document.getElementById('list');
 const score = document.getElementById('score');
 const doneMsg = document.getElementById('doneMsg');
+const doneBtn = document.getElementById('done');
 
 function track(eventName, params={}) {
   if (typeof window.gtag === 'function') window.gtag('event', eventName, params);
@@ -330,10 +332,7 @@ function render(items){
     });
     move.append(up, down);
 
-    const num=document.createElement('span');
-    num.className='num';
-
-    li.append(num, cb, span, prio, move);
+    li.append(cb, span, prio, move);
     list.appendChild(li);
   });
   updateMoveButtons();
@@ -344,8 +343,6 @@ function render(items){
 function updateMoveButtons(){
   const lis=[...list.querySelectorAll('li')];
   lis.forEach((li,i)=>{
-    const num=li.querySelector('.num');
-    if(num) num.textContent=(i+1);
     const btns=li.querySelectorAll('.mv');
     if(btns.length<2) return;
     btns[0].disabled=(i===0);
@@ -359,6 +356,7 @@ function updateScore(){
   score.textContent=`${done} / ${boxes.length} 완료`;
   const allDone = boxes.length>0 && done===boxes.length;
   doneMsg.classList.toggle('show', allDone);
+  doneBtn.disabled = !allDone;
   if(allDone){
     if(!doneMsg.dataset.fired){
       doneMsg.dataset.fired='1';
@@ -374,7 +372,16 @@ function resetToStart(){
   list.innerHTML='';
   result.style.display='none';
   score.textContent='0 / 0 완료';
+  doneMsg.classList.remove('show');
+  delete doneMsg.dataset.fired;
+  doneBtn.disabled=true;
 }
+
+doneBtn.addEventListener('click',()=>{
+  track('checklist_submitted');
+  alert('수고하셨습니다! 🎉');
+  resetToStart();
+});
 
 const infoModal = document.getElementById('infoModal');
 const subjectInput = document.getElementById('subjectInput');
